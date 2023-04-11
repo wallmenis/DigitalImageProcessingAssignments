@@ -24,6 +24,35 @@ def kernel_to_pixel(image_source,kernel,pos_x,pos_y):
             pixelsum=pixelsum+kernel[i][j]*image_source[tmpx][tmpy]
     return pixelsum
 
+def med_to_pixel(image_source,mask_x,mask_y,pos_x,pos_y):
+    pixelmed=0
+    tmpx=0
+    tmpy=0
+    tmpimage=np.zeros((mask_x*mask_y))
+    for i in range (-mask_x//2, mask_y//2):
+        for j in range (-mask_x//2, mask_y//2):
+            tmpx=i+pos_x
+            tmpy=j+pos_y
+            if((tmpx not in range (0,image_source.shape[0]))or (tmpy not in range (0,image_source.shape[1]))):    #Αντί να επεκτείνουμε τον "καμβά" που δουλεύουμε, βάζουμε απευθείας στην μάσκα τις τιμές για καλύτερη χωρική πολυπλοκότητα
+                #print ("I GOT IN HERE! {} {}".format( tmpx,tmpy))
+                if(tmpx < 0):
+                    tmpx=0
+                if(tmpx > image_source.shape[0]-1):
+                    tmpx = image_source.shape[0]-1
+                if(tmpy < 0):
+                    tmpy =0
+                if(tmpy > image_source.shape[0]-1):
+                    tmpy = image_source.shape[1]-1
+                #print(tmpx, tmpy)
+            tmpimage[(i)*(j+1)]=image_source[tmpx][tmpy]
+            #print(image_source[tmpx][tmpy])
+    #print(tmpimage)
+    tmpimage=np.sort(tmpimage)
+    
+    pixelmed=tmpimage[mask_x*mask_y//2]
+            #print(pixelmed)
+    return pixelmed
+
 #def img_convolve_sub (image_source,kernel,coords):  # Θα κάνουμε υλοποίηση divide and conquer!
 #    if coords[0]-coords[1] = 0 and coords[2] - coords[3] = 0:
 #        return kernel_to_pixel(image_source,kernel,coords[0],coords[2])
@@ -56,8 +85,18 @@ def makeblur (image_source, mask_x, mask_y):
     output=img_convolve(image_source,kernel)
     return output
 
-#def makelaplacian(bw, mask_x, mask_y):
-    
+def makeblurmed(image_source,mask_x,mask_y):
+    result_image=np.zeros((image_source.shape[0],image_source.shape[1]), np.uint8)
+    for i in range (0, image_source.shape[0]):
+        for j in range (0, image_source.shape[1]):
+            result_image[i][j]=med_to_pixel(image_source,mask_x,mask_y,i,j)
+            #print(result_image[i][j])
+    return result_image
+
+def makelaplacian(image_source):
+    kernel=np.array([[1, 1, 1],[1,-8,1],[1,1,1]])/9
+    result_image=img_convolve(image_source,kernel)
+    return result_image    
 
 rgb_img=cv2.imread("source.png")
 
@@ -69,34 +108,43 @@ print(bw.shape)
 blr3x3=makeblur(bw,3,3)
 print("Made 3x3")
 
+blr3x3med=makeblurmed(bw,3,3)
+print("Made 3x3 med")
+
 #blr9x9=makeblur(bw,9,9)
 #print("Made 9x9")
 
 #blr15x15=makeblur(bw,15,15)
 #print("Made 15x15")
-#laplace3x3=makelaplacian(bw,3,3)
-#print("Made laplacian 3x3")
+
+laplace=makelaplacian(blr3x3)
+print("Made laplacian")
+
+finallap=np.add(laplace,blr3x3)
 
 cv2.imshow("grayscale", bw)
 cv2.imshow("blured 3x3 image", blr3x3)
+cv2.imshow("blured 3x3 med image", blr3x3med)
+cv2.imshow("laplacian image", laplace)
 #cv2.imshow("blured 9x9 image", blr9x9)
 #cv2.imshow("blured 15x15 image", blr15x15)
-#cv2.imshow("laplacian sharpened blured 15x15 image", laplace)
+cv2.imshow("laplacian sharpened blured 3x3 image", finallap)
 
 #cv2.imwrite("blured 3x3 image.png", blr3x3)
+#cv2.imwrite("blured 3x3 med image", blr3x3med)
 #cv2.imwrite("blured 9x9 image.png", blr9x9)
 #cv2.imwrite("blured 15x15 image.png", blr15x15)
-#cv2.imwrite("laplacian sharpened blured 15x15 image.png", laplace)
+#cv2.imwrite("laplacian sharpened blured 3x3 image.png", finallap)
 
 
 #testing
-blured_gray3x3=cv2.blur(bw,(3, 3)) #opencv for refference
+#blured_gray3x3=cv2.blur(bw,(3, 3)) #opencv for refference
 #blured_gray9x9=cv2.blur(bw,(9, 9)) #opencv for refference
 #blured_gray15x15=cv2.blur(bw,(15, 15)) #opencv for refference
 #difference=np.subtract(blr3x3,blured_gray3x3)
 #difference=np.subtract(blr9x9,blured_gray9x9)
 #difference=np.subtract(blr15x15,blured_gray15x15)
-cv2.imshow("blured 3x3 image cv", blured_gray3x3)
+#cv2.imshow("blured 3x3 image cv", blured_gray3x3)
 #cv2.imshow("blured 9x9 image cv", blured_gray9x9)
 #cv2.imshow("blured 15x15 image cv", blured_gray15x15)
 #cv2.imshow("blured image diff", difference)
