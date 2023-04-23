@@ -27,8 +27,8 @@ print("Made 15x15")
 blr15x15median=cv2.medianBlur(bw,15)  # https://opencv24-python-tutorials.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_filtering/py_filtering.html#median-filtering
 print("Made 15x15 median")
 
-laplace=cv2.Laplacian(blr3x3,-1,3)
-#laplace=np.add(cv2.Sobel(bw,-1,dx=1,dy=0,ksize=3),cv2.Sobel(bw,-1,dx=0,dy=1,ksize=3))
+#laplace=cv2.Laplacian(blr3x3,-1,3)
+laplace=np.add(cv2.Sobel(bw,-1,dx=1,dy=0,ksize=3),cv2.Sobel(bw,-1,dx=0,dy=1,ksize=3))
 print("Made laplacian")
 finallap=np.add(laplace,blr3x3)
 
@@ -47,6 +47,6 @@ cv2.imwrite("laplacian_image_ex2.png", laplace)
 cv2.imwrite("blured_9x9_image.png", blr9x9)
 cv2.imwrite("blured_9x9_median_image.png", blr9x9median)
 cv2.imwrite("blured_15x15_median_image.png", blr15x15median)
-cv2.imwrite("laplacian_sharpened_blured_3x3_image", finallap)
+cv2.imwrite("laplacian_sharpened_blured_3x3_image.png", finallap)
 
 cv2.waitKey(0)
