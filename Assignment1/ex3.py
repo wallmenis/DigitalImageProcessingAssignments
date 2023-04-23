@@ -40,8 +40,8 @@ def set_histogram(img,gfunc):
             image[i][j]=gfunc[img[i][j]]
     return image
 
-og=cv2.imread("source.png")
-guide=cv2.imread("source2.png")
+og=cv2.imread("source2.png")
+guide=cv2.imread("source.png")
 ogbw=cv2.cvtColor(og,cv2.COLOR_BGR2GRAY)
 guidebw=cv2.cvtColor(guide,cv2.COLOR_BGR2GRAY)
 ogbweq=cv2.equalizeHist(ogbw)
@@ -70,9 +70,11 @@ cv2.imwrite("Grayscale.png", ogbw)
 
 cv2.imshow("Original", og)
 cv2.imshow("Guide", guide)
-cv2.imshow("Grayscale", ogbw)
-cv2.imshow("Equalized Histogram", ogbweq) # https://docs.opencv.org/3.4/d4/d1b/tutorial_histogram_equalization.html
+cv2.imshow("Guide Grayscale", guidebw)
+cv2.imshow("Original Grayscale", ogbw)
+cv2.imshow("Original Grayscale Equalized Histogram", ogbweq) # https://docs.opencv.org/3.4/d4/d1b/tutorial_histogram_equalization.html
 cv2.imshow("Final Image", final)
+cv2.imwrite("final_image_ex3.png", final)
 #print(histog)
 cv2.imshow("Histogram OG", make_histogram_image(histog))
 cv2.imshow("Histogram OG equalised", make_histogram_image(histogeq))
