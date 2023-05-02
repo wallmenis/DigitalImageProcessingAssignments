@@ -83,11 +83,6 @@ def makeblur (image_source, mask_x, mask_y):
     output=img_convolve(image_source,kernel)
     return output
 
-def makeblur_new (image_source, mask_x, mask_y):
-    kernel=np.ones((mask_x,mask_y))#/(mask_x*mask_y)
-    output=scipy.signal.fftconvolve(image_source,kernel)
-    return output
-
 def makeblurmedian(image_source,mask_x,mask_y):
     result_image=np.zeros((image_source.shape[0],image_source.shape[1]), np.uint8)
     for i in range (0, image_source.shape[0]):
@@ -110,19 +105,19 @@ print(bw.shape)
 blr3x3=makeblur(bw,3,3)
 print("Made 3x3")
 
-#blr9x9=makeblur(bw,9,9)
+blr9x9=makeblur(bw,9,9)
 print("Made 9x9")
 
-#blr15x15=makeblur(bw,15,15)
+blr15x15=makeblur(bw,15,15)
 print("Made 15x15")
 
-#blr3x3median=makeblurmedian(bw,3,3)
+blr3x3median=makeblurmedian(bw,3,3)
 print("Made 3x3 median")
 
-#blr9x9median=makeblurmedian(bw,9,9)
+blr9x9median=makeblurmedian(bw,9,9)
 print("Made 9x9 median")
 
-#blr15x15median=makeblurmedian(bw,15,15)
+blr15x15median=makeblurmedian(bw,15,15)
 print("Made 9x9 median")
 
 
@@ -134,33 +129,20 @@ finallap=np.add(laplace,blr3x3)
 cv2.imshow("grayscale", bw)
 cv2.imshow("laplacian image", laplace)
 cv2.imshow("blured 3x3 image", blr3x3)
-#cv2.imshow("blured 9x9 image", blr9x9)
-#cv2.imshow("blured 15x15 image", blr15x15)
-#cv2.imshow("blured 3x3 median image", blr3x3median)
-#cv2.imshow("blured 9x9 median image", blr9x9median)
-#cv2.imshow("blured 15x15 median image", blr15x15median)
+cv2.imshow("blured 9x9 image", blr9x9)
+cv2.imshow("blured 15x15 image", blr15x15)
+cv2.imshow("blured 3x3 median image", blr3x3median)
+cv2.imshow("blured 9x9 median image", blr9x9median)
+cv2.imshow("blured 15x15 median image", blr15x15median)
 cv2.imshow("laplacian sharpened blured 3x3 image", finallap)
 
-#cv2.imwrite("blured_3x3_image_ex1.png", blr3x3)
-#cv2.imwrite("blured_9x9_image_ex1.png", blr9x9)
-#cv2.imwrite("blured_15x15_image_ex1.png", blr15x15)
-#cv2.imwrite("blured_3x3_median_image_ex1.png", blr3x3median)
-#cv2.imwrite("blured_9x9_median_image_ex1.png", blr9x9median)
-#cv2.imwrite("blured_15x15_median_image_ex1.png", blr15x15median)
-#cv2.imwrite("laplacian_sharpened_blured_3x3_image_ex1.png", finallap)
-
-
-#testing
-#blured_gray3x3=cv2.blur(bw,(3, 3)) #opencv for refference
-#blured_gray9x9=cv2.blur(bw,(9, 9)) #opencv for refference
-#blured_gray15x15=cv2.blur(bw,(15, 15)) #opencv for refference
-#difference=np.subtract(blr3x3,blured_gray3x3)
-#difference=np.subtract(blr9x9,blured_gray9x9)
-#difference=np.subtract(blr15x15,blured_gray15x15)
-#cv2.imshow("blured 3x3 image cv", blured_gray3x3)
-#cv2.imshow("blured 9x9 image cv", blured_gray9x9)
-#cv2.imshow("blured 15x15 image cv", blured_gray15x15)
-#cv2.imshow("blured image diff", difference)
+cv2.imwrite("blured_3x3_image_ex1.png", blr3x3)
+cv2.imwrite("blured_9x9_image_ex1.png", blr9x9)
+cv2.imwrite("blured_15x15_image_ex1.png", blr15x15)
+cv2.imwrite("blured_3x3_median_image_ex1.png", blr3x3median)
+cv2.imwrite("blured_9x9_median_image_ex1.png", blr9x9median)
+cv2.imwrite("blured_15x15_median_image_ex1.png", blr15x15median)
+cv2.imwrite("laplacian_sharpened_blured_3x3_image_ex1.png", finallap)
 
 
 cv2.waitKey(0)
