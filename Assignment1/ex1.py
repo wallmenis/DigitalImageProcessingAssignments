@@ -3,7 +3,7 @@ import cv2
 #import pyjion; pyjion.enable()
 
 
-def kernel_to_pixel(image_source,kernel,pos_x,pos_y):
+def kernel_to_pixel(image_source,kernel,pos_x,pos_y,divider=1):
     pixelsum=0
     crpxs=pos_x-kernel.shape[0]//2
     crpxe=pos_x+kernel.shape[0]//2
@@ -13,7 +13,12 @@ def kernel_to_pixel(image_source,kernel,pos_x,pos_y):
     for i in range(0,tmpimage.shape[0]):
         for j in range(0,tmpimage.shape[1]):
             #print(i,j,tmpimage.shape[0],tmpimage.shape[1],kernel.shape[0]//2,kernel.shape[1]//2)
-            pixelsum=pixelsum+kernel[i][j]*tmpimage[i][j]
+            pixelsum=pixelsum+kernel[i][j]*tmpimage[i][j]/divider
+    pixelsum=np.around(pixelsum)
+    if pixelsum>255:
+        pixelsum=255
+    if pixelsum<0:
+        pixelsum=0
     return pixelsum
 
 def med_to_pixel(image_source,mask_x,mask_y,pos_x,pos_y):
@@ -25,7 +30,7 @@ def med_to_pixel(image_source,mask_x,mask_y,pos_x,pos_y):
     pixelmed=np.median(tmpimage)
     return pixelmed
 
-def img_convolve (image_source,kernel):             # Κάνει συνέλιξη σε εικόνες με το δωσμένο kernel
+def img_convolve (image_source,kernel,divider=1):             # Κάνει συνέλιξη σε εικόνες με το δωσμένο kernel
     result_image=np.zeros((image_source.shape[0],image_source.shape[1]), np.uint8)
     inv_kernel=np.zeros((kernel.shape[0],kernel.shape[1]))      #Για τυπικότητα, αντιστρέφουμε το kernel
     mask_x=kernel.shape[0]
@@ -37,7 +42,7 @@ def img_convolve (image_source,kernel):             # Κάνει συνέλιξ�
             inv_kernel[kernel.shape[0]-1-i][kernel.shape[1]-1-j]=kernel[i][j]
     for i in range (mask_x, image_source.shape[0]+mask_x):
         for j in range (mask_y, image_source.shape[1]+mask_y):
-            result_image[i-mask_x][j-mask_y]=kernel_to_pixel(tmpimage,inv_kernel,i,j)
+            result_image[i-mask_x][j-mask_y]=kernel_to_pixel(tmpimage,inv_kernel,i,j,divider)
     return result_image
 
 
@@ -65,6 +70,7 @@ def makeblurmedian(image_source,mask_x,mask_y):
 
 def makelaplacian(image_source):
     kernel=np.array([[-1, -1, -1],[-1,8,-1],[-1,-1,-1]])/9     #Οι παράγωγοι κάνουν τέτοια μάσκα. Είναι δια 9 για λόγους έντασης
+    #kernel=np.array([[0, -2, 0],[-2,8,-2],[0,-2,0]])/9 
     result_image=img_convolve(image_source,kernel)
     return result_image    
 
@@ -93,7 +99,6 @@ print("Made 9x9 median")
 blr15x15median=makeblurmedian(bw,15,15)
 print("Made 15x15 median")
 
-
 laplace=makelaplacian(blr3x3)
 print("Made laplacian")
 
@@ -109,6 +114,7 @@ cv2.imshow("blured 9x9 median image", blr9x9median)
 cv2.imshow("blured 15x15 median image", blr15x15median)
 cv2.imshow("laplacian sharpened blured 3x3 image", finallap)
 
+cv2.imwrite("laplacian_image_ex1.png", laplace)
 cv2.imwrite("blured_3x3_image_ex1.png", blr3x3)
 cv2.imwrite("blured_9x9_image_ex1.png", blr9x9)
 cv2.imwrite("blured_15x15_image_ex1.png", blr15x15)

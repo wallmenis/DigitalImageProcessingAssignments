@@ -27,7 +27,9 @@ print("Made 15x15")
 blr15x15median=cv2.medianBlur(bw,15)  # https://opencv24-python-tutorials.readthedocs.io/en/latest/py_tutorials/py_imgproc/py_filtering/py_filtering.html#median-filtering
 print("Made 15x15 median")
 
-laplace=cv2.Laplacian(blr3x3,-1,3)
+laplace=cv2.Laplacian(blr3x3,-1)
+#kernel=np.array([[-1, -1, -1],[-1,8,-1],[-1,-1,-1]])
+#laplace=cv2.filter2D(bw,-1,kernel)
 #laplace=np.add(cv2.Sobel(bw,-1,dx=1,dy=0,ksize=3),cv2.Sobel(bw,-1,dx=0,dy=1,ksize=3))
 print("Made laplacian")
 finallap=np.add(laplace,blr3x3)
