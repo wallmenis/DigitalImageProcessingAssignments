@@ -62,7 +62,7 @@ final=set_histogram(ogbweq,gfunc)
 histfinal=cv2.calcHist([final],[0], None, [256], [0,256], False)        # Είναι για σύγκρηση και όχι για χρήση
 cv2.normalize(histfinal, histfinal, alpha=0, beta=512, norm_type=cv2.NORM_MINMAX)
 
-cv2.imwrite("Grayscale.png", ogbw)
+#cv2.imwrite("grayscale.png", ogbw)
 
 #cv2.imshow("Original", og)
 #cv2.imshow("Guide", guide)
