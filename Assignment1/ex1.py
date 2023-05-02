@@ -1,72 +1,43 @@
 import numpy as np
 import cv2
-import scipy
 #import pyjion; pyjion.enable()
+
 
 def kernel_to_pixel(image_source,kernel,pos_x,pos_y):
     pixelsum=0
-    tmpx=0
-    tmpy=0
-    for i in range (-kernel.shape[0]//2, kernel.shape[0]//2):
-        for j in range (-kernel.shape[1]//2, kernel.shape[1]//2):
-            tmpx=i+pos_x
-            tmpy=j+pos_y
-            #if((tmpx not in range (0,image_source.shape[0]))or (tmpy not in range (0,image_source.shape[1]))):    #Αντί να επεκτείνουμε τον "καμβά" που δουλεύουμε, βάζουμε απευθείας στην μάσκα τις τιμές για καλύτερη χωρική πολυπλοκότητα
-                #print ("I GOT IN HERE! {} {}".format( tmpx,tmpy))
-            if(tmpx < 0):
-                tmpx=0
-            if(tmpx > image_source.shape[0]-1):
-                tmpx = image_source.shape[0]-1
-            if(tmpy < 0):
-                tmpy =0
-            if(tmpy > image_source.shape[0]-1):
-                tmpy = image_source.shape[1]-1
-            #print(tmpx, tmpy)
-            pixelsum=pixelsum+kernel[i][j]*image_source[tmpx][tmpy]
+    crpxs=pos_x-kernel.shape[0]//2
+    crpxe=pos_x+kernel.shape[0]//2
+    crpys=pos_y-kernel.shape[1]//2
+    crpye=pos_y+kernel.shape[1]//2
+    tmpimage=image_source[(crpxs):(crpxe+1), (crpys):(crpye+1)] # Τα +1 είναι για να φτιάξουμε το offset που κάνει η numpy
+    for i in range(0,tmpimage.shape[0]):
+        for j in range(0,tmpimage.shape[1]):
+            #print(i,j,tmpimage.shape[0],tmpimage.shape[1],kernel.shape[0]//2,kernel.shape[1]//2)
+            pixelsum=pixelsum+kernel[i][j]*tmpimage[i][j]
     return pixelsum
 
 def med_to_pixel(image_source,mask_x,mask_y,pos_x,pos_y):
-    pixelmed=0
-    tmpx=0
-    tmpy=0
-    tmpimage=np.zeros((mask_x*mask_y))
-    for i in range (-mask_x//2, mask_y//2):
-        for j in range (-mask_x//2, mask_y//2):
-            tmpx=i+pos_x
-            tmpy=j+pos_y
-                #Αντί να επεκτείνουμε τον "καμβά" που δουλεύουμε, βάζουμε απευθείας στην μάσκα τις τιμές για καλύτερη χωρική πολυπλοκότητα
-                #print ("I GOT IN HERE! {} {}".format( tmpx,tmpy))
-            if(tmpx < 0):
-                tmpx= 0
-            if(tmpx > image_source.shape[0]-1):
-                tmpx = image_source.shape[0]-1
-            if(tmpy < 0):
-                tmpy = 0
-            if(tmpy > image_source.shape[1]-1):
-                tmpy = image_source.shape[1]-1
-            #print(tmpx, tmpy)
-            tmpimage[(i)*(j)+i]=image_source[tmpx][tmpy]
-            if image_source[tmpx][tmpy] == 0:
-                print("At {} {}: {}".format(tmpx, tmpy, image_source[tmpx][tmpy]))
-            #print(image_source[tmpx][tmpy])
-    #print(tmpimage)
-    
-    #tmpimage=np.sort(tmpimage)
-    
-    #pixelmed=tmpimage[mask_x*mask_y//2]
-            #print(pixelmed)
+    crpxs=pos_x-mask_x//2
+    crpxe=pos_x+mask_x//2
+    crpys=pos_y-mask_y//2
+    crpye=pos_y+mask_y//2
+    tmpimage=image_source[(crpxs):(crpxe+1), (crpys):(crpye+1)]
     pixelmed=np.median(tmpimage)
     return pixelmed
 
 def img_convolve (image_source,kernel):             # Κάνει συνέλιξη σε εικόνες με το δωσμένο kernel
     result_image=np.zeros((image_source.shape[0],image_source.shape[1]), np.uint8)
     inv_kernel=np.zeros((kernel.shape[0],kernel.shape[1]))      #Για τυπικότητα, αντιστρέφουμε το kernel
+    mask_x=kernel.shape[0]
+    mask_y=kernel.shape[1]
+    tmpimage=np.pad(image_source, (mask_x,mask_y),mode='edge')  # Κάνουμε pad ανάλογα την εικόνα
+    
     for i in range (0, kernel.shape[0]):
         for j in range (0, kernel.shape[1]):
             inv_kernel[kernel.shape[0]-1-i][kernel.shape[1]-1-j]=kernel[i][j]
-    for i in range (0, image_source.shape[0]):
-        for j in range (0, image_source.shape[1]):
-            result_image[i][j]=kernel_to_pixel(image_source,inv_kernel,i,j)
+    for i in range (mask_x, image_source.shape[0]+mask_x):
+        for j in range (mask_y, image_source.shape[1]+mask_y):
+            result_image[i-mask_x][j-mask_y]=kernel_to_pixel(tmpimage,inv_kernel,i,j)
     return result_image
 
 
@@ -79,15 +50,17 @@ def makegrayscale(image_source):
     return grayscale
 
 def makeblur (image_source, mask_x, mask_y):
-    kernel=np.ones((mask_x,mask_y))/(mask_x*mask_y)
+    kernel=np.ones((mask_x,mask_y))/(mask_x*mask_y)         # Η μάσκα μέσου όρου (άσοι όλοι)
     output=img_convolve(image_source,kernel)
     return output
 
 def makeblurmedian(image_source,mask_x,mask_y):
     result_image=np.zeros((image_source.shape[0],image_source.shape[1]), np.uint8)
-    for i in range (0, image_source.shape[0]):
-        for j in range (0, image_source.shape[1]):
-            result_image[i][j]=med_to_pixel(image_source,mask_x,mask_y,i,j)
+    tmpimage=np.pad(image_source, (mask_x,mask_y),mode='edge')
+    #cv2.imshow("test", tmpimage)
+    for i in range (mask_x, image_source.shape[0]+mask_x):
+        for j in range (mask_y, image_source.shape[1]+mask_y):
+            result_image[i-mask_x][j-mask_y]=med_to_pixel(tmpimage,mask_x,mask_y,i,j)     # Στην ουσία παίρνουμε την median τιμή από το μέρος της εικόνας
     return result_image
 
 def makelaplacian(image_source):
@@ -118,7 +91,7 @@ blr9x9median=makeblurmedian(bw,9,9)
 print("Made 9x9 median")
 
 blr15x15median=makeblurmedian(bw,15,15)
-print("Made 9x9 median")
+print("Made 15x15 median")
 
 
 laplace=makelaplacian(blr3x3)
@@ -143,6 +116,5 @@ cv2.imwrite("blured_3x3_median_image_ex1.png", blr3x3median)
 cv2.imwrite("blured_9x9_median_image_ex1.png", blr9x9median)
 cv2.imwrite("blured_15x15_median_image_ex1.png", blr15x15median)
 cv2.imwrite("laplacian_sharpened_blured_3x3_image_ex1.png", finallap)
-
 
 cv2.waitKey(0)
