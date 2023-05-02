@@ -1,5 +1,6 @@
 import numpy as np
 import cv2
+import scipy
 #import pyjion; pyjion.enable()
 
 def kernel_to_pixel(image_source,kernel,pos_x,pos_y):
@@ -10,21 +11,19 @@ def kernel_to_pixel(image_source,kernel,pos_x,pos_y):
         for j in range (-kernel.shape[1]//2, kernel.shape[1]//2):
             tmpx=i+pos_x
             tmpy=j+pos_y
-            if((tmpx not in range (0,image_source.shape[0]))or (tmpy not in range (0,image_source.shape[1]))):    #Αντί να επεκτείνουμε τον "καμβά" που δουλεύουμε, βάζουμε απευθείας στην μάσκα τις τιμές για καλύτερη χωρική πολυπλοκότητα
+            #if((tmpx not in range (0,image_source.shape[0]))or (tmpy not in range (0,image_source.shape[1]))):    #Αντί να επεκτείνουμε τον "καμβά" που δουλεύουμε, βάζουμε απευθείας στην μάσκα τις τιμές για καλύτερη χωρική πολυπλοκότητα
                 #print ("I GOT IN HERE! {} {}".format( tmpx,tmpy))
-                if(tmpx < 0):
-                    tmpx=0
-                if(tmpx > image_source.shape[0]-1):
-                    tmpx = image_source.shape[0]-1
-                if(tmpy < 0):
-                    tmpy =0
-                if(tmpy > image_source.shape[0]-1):
-                    tmpy = image_source.shape[1]-1
-                #print(tmpx, tmpy)
+            if(tmpx < 0):
+                tmpx=0
+            if(tmpx > image_source.shape[0]-1):
+                tmpx = image_source.shape[0]-1
+            if(tmpy < 0):
+                tmpy =0
+            if(tmpy > image_source.shape[0]-1):
+                tmpy = image_source.shape[1]-1
+            #print(tmpx, tmpy)
             pixelsum=pixelsum+kernel[i][j]*image_source[tmpx][tmpy]
     return pixelsum
-
-
 
 def med_to_pixel(image_source,mask_x,mask_y,pos_x,pos_y):
     pixelmed=0
@@ -38,23 +37,25 @@ def med_to_pixel(image_source,mask_x,mask_y,pos_x,pos_y):
                 #Αντί να επεκτείνουμε τον "καμβά" που δουλεύουμε, βάζουμε απευθείας στην μάσκα τις τιμές για καλύτερη χωρική πολυπλοκότητα
                 #print ("I GOT IN HERE! {} {}".format( tmpx,tmpy))
             if(tmpx < 0):
-                tmpx=0
+                tmpx= 0
             if(tmpx > image_source.shape[0]-1):
                 tmpx = image_source.shape[0]-1
             if(tmpy < 0):
-                tmpy =0
-            if(tmpy > image_source.shape[0]-1):
+                tmpy = 0
+            if(tmpy > image_source.shape[1]-1):
                 tmpy = image_source.shape[1]-1
             #print(tmpx, tmpy)
-            tmpimage[(i)*(j+1)]=image_source[tmpx][tmpy]
+            tmpimage[(i)*(j)+i]=image_source[tmpx][tmpy]
+            if image_source[tmpx][tmpy] == 0:
+                print("At {} {}: {}".format(tmpx, tmpy, image_source[tmpx][tmpy]))
             #print(image_source[tmpx][tmpy])
     #print(tmpimage)
     
-    tmpimage=np.sort(tmpimage)
+    #tmpimage=np.sort(tmpimage)
     
-    pixelmed=tmpimage[mask_x*mask_y//2]
+    #pixelmed=tmpimage[mask_x*mask_y//2]
             #print(pixelmed)
-    #pixelmed=np.median(tmpimage)
+    pixelmed=np.median(tmpimage)
     return pixelmed
 
 def img_convolve (image_source,kernel):             # Κάνει συνέλιξη σε εικόνες με το δωσμένο kernel
@@ -78,9 +79,13 @@ def makegrayscale(image_source):
     return grayscale
 
 def makeblur (image_source, mask_x, mask_y):
-
-    kernel=np.ones((mask_x,mask_y))/(mask_x*mask_y)     #Είναι το kernel για τον μέσο όρο
+    kernel=np.ones((mask_x,mask_y))/(mask_x*mask_y)
     output=img_convolve(image_source,kernel)
+    return output
+
+def makeblur_new (image_source, mask_x, mask_y):
+    kernel=np.ones((mask_x,mask_y))#/(mask_x*mask_y)
+    output=scipy.signal.fftconvolve(image_source,kernel)
     return output
 
 def makeblurmedian(image_source,mask_x,mask_y):
@@ -91,7 +96,7 @@ def makeblurmedian(image_source,mask_x,mask_y):
     return result_image
 
 def makelaplacian(image_source):
-    kernel=np.array([[0, 2, 0],[2,-8,2],[0,2,0]])/9
+    kernel=np.array([[-1, -1, -1],[-1,8,-1],[-1,-1,-1]])/9     #Οι παράγωγοι κάνουν τέτοια μάσκα. Είναι δια 9 για λόγους έντασης
     result_image=img_convolve(image_source,kernel)
     return result_image    
 
@@ -105,19 +110,19 @@ print(bw.shape)
 blr3x3=makeblur(bw,3,3)
 print("Made 3x3")
 
-blr9x9=makeblur(bw,9,9)
+#blr9x9=makeblur(bw,9,9)
 print("Made 9x9")
 
-blr15x15=makeblur(bw,15,15)
+#blr15x15=makeblur(bw,15,15)
 print("Made 15x15")
 
-blr3x3median=makeblurmedian(bw,3,3)
+#blr3x3median=makeblurmedian(bw,3,3)
 print("Made 3x3 median")
 
-blr9x9median=makeblurmedian(bw,9,9)
+#blr9x9median=makeblurmedian(bw,9,9)
 print("Made 9x9 median")
 
-blr15x15median=makeblurmedian(bw,15,15)
+#blr15x15median=makeblurmedian(bw,15,15)
 print("Made 9x9 median")
 
 
@@ -129,20 +134,20 @@ finallap=np.add(laplace,blr3x3)
 cv2.imshow("grayscale", bw)
 cv2.imshow("laplacian image", laplace)
 cv2.imshow("blured 3x3 image", blr3x3)
-cv2.imshow("blured 9x9 image", blr9x9)
-cv2.imshow("blured 15x15 image", blr15x15)
-cv2.imshow("blured 3x3 median image", blr3x3median)
-cv2.imshow("blured 9x9 median image", blr9x9median)
-cv2.imshow("blured 15x15 median image", blr15x15median)
+#cv2.imshow("blured 9x9 image", blr9x9)
+#cv2.imshow("blured 15x15 image", blr15x15)
+#cv2.imshow("blured 3x3 median image", blr3x3median)
+#cv2.imshow("blured 9x9 median image", blr9x9median)
+#cv2.imshow("blured 15x15 median image", blr15x15median)
 cv2.imshow("laplacian sharpened blured 3x3 image", finallap)
 
-cv2.imwrite("blured_3x3_image_ex1.png", blr3x3)
-cv2.imwrite("blured_9x9_image_ex1.png", blr9x9)
-cv2.imwrite("blured_15x15_image_ex1.png", blr15x15)
-cv2.imwrite("blured_3x3_median_image_ex1.png", blr3x3median)
-cv2.imwrite("blured_9x9_median_image_ex1.png", blr9x9median)
-cv2.imwrite("blured_15x15_median_image_ex1.png", blr15x15median)
-cv2.imwrite("laplacian_sharpened_blured_3x3_image_ex1.png", finallap)
+#cv2.imwrite("blured_3x3_image_ex1.png", blr3x3)
+#cv2.imwrite("blured_9x9_image_ex1.png", blr9x9)
+#cv2.imwrite("blured_15x15_image_ex1.png", blr15x15)
+#cv2.imwrite("blured_3x3_median_image_ex1.png", blr3x3median)
+#cv2.imwrite("blured_9x9_median_image_ex1.png", blr9x9median)
+#cv2.imwrite("blured_15x15_median_image_ex1.png", blr15x15median)
+#cv2.imwrite("laplacian_sharpened_blured_3x3_image_ex1.png", finallap)
 
 
 #testing

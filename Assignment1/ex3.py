@@ -25,7 +25,7 @@ def make_g_func(hist):
         output[i] = sum
         #print(sum)
         #print(hist[i])
-    return 255*output/np.sum(hist)
+    return np.floor(255*output/np.sum(hist))
 
 def calc_histogram(img):
     output=np.zeros((256, 1))
@@ -47,26 +47,29 @@ guidebw=cv2.cvtColor(guide,cv2.COLOR_BGR2GRAY)
 ogbweq=cv2.equalizeHist(ogbw)
 
 
-hist=cv2.calcHist(guidebw,[0], None, [256], [0,256], True)
-histog=cv2.calcHist(ogbw,[0], None, [256], [0,256], False)
-histogeq=cv2.calcHist(ogbweq,[0], None, [256], [0,256], False)
+hist=cv2.calcHist([guidebw],[0], None, [256], (0,256), True)
+cv2.normalize(hist, hist, alpha=0, beta=512, norm_type=cv2.NORM_MINMAX)
+#histog=cv2.calcHist([ogbw],[0], None, [256], [0,256], False)
+#cv2.normalize(histog, histog, alpha=0, beta=512, norm_type=cv2.NORM_MINMAX)
+#histogeq=cv2.calcHist([ogbweq],[0], None, [256], [0,256], False)
+#cv2.normalize(histogeq, histogeq, alpha=0, beta=512, norm_type=cv2.NORM_MINMAX)
 print(hist.shape)
 
-histcustom=calc_histogram(guidebw)
+#histcustom=calc_histogram(guidebw)
 
 
-gfunc=make_g_func(histcustom)
+gfunc=make_g_func(hist)
 
-print(hist)
+#print(hist)
 #print(gfunc)
 
 #print(gfunc[254])
 final=set_histogram(ogbweq,gfunc)
 
-histfinal=cv2.calcHist(final,[0], None, [256], [0,256], False)
+histfinal=cv2.calcHist([final],[0], None, [256], [0,256], False)
+cv2.normalize(histfinal, histfinal, alpha=0, beta=512, norm_type=cv2.NORM_MINMAX)
 
 cv2.imwrite("Grayscale.png", ogbw)
-
 
 cv2.imshow("Original", og)
 cv2.imshow("Guide", guide)
@@ -76,12 +79,12 @@ cv2.imshow("Original Grayscale Equalized Histogram", ogbweq) # https://docs.open
 cv2.imshow("Final Image", final)
 cv2.imwrite("final_image_ex3.png", final)
 #print(histog)
-cv2.imshow("Histogram OG", make_histogram_image(histog))
-cv2.imshow("Histogram OG equalised", make_histogram_image(histogeq))
+#cv2.imshow("Histogram OG", make_histogram_image(histog))
+#cv2.imshow("Histogram OG equalised", make_histogram_image(histogeq))
 cv2.imshow("Histogram Guide", make_histogram_image(hist))
 cv2.imshow("gfunc", make_histogram_image(gfunc))
 cv2.imshow("Histogram Final", make_histogram_image(histfinal))
-cv2.imshow("Custom Hist",make_histogram_image(histcustom))
+#cv2.imshow("Custom Hist",make_histogram_image(histcustom))
 #plt.hist(histog)
 #plt.show()
 
