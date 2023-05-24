@@ -1,3 +1,4 @@
 #! /bin/bash
-curl -LJO "https://vcl.ucsd.edu/hed/hed_pretrained_bsds.caffemodel"
-curl -LJO "https://raw.githubusercontent.com/s9xie/hed/master/examples/hed/deploy.prototxt" > deploy.prototxt
+
+curl -LJO "https://raw.githubusercontent.com/acarcher/hed-opencv-dl/master/hed_model/hed_pretrained_bsds.caffemodel"
+curl -LJO "https://raw.githubusercontent.com/acarcher/hed-opencv-dl/master/hed_model/deploy.prototxt" > deploy.prototxt
