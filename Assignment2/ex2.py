@@ -20,7 +20,7 @@ laplacian=cv2.Laplacian(ogblured,-1)    # Είναι η κλασική λαπλ�
 # κάθετα και οριζόντια αντίστοιχα. Πάλι έχουμε μια συνάρτηση αρθροίσματος που μας βοηθάει να μην έχουμε over/underflows. 
 sobel=add_no_under_overflow(cv2.Sobel(ogblured,-1,dx=1,dy=1,ksize=3),add_no_under_overflow(cv2.Sobel(ogblured,-1,dx=1,dy=0,ksize=3),cv2.Sobel(ogblured,-1,dx=0,dy=1,ksize=3)))
 
-canny=cv2.Canny(original,95,255) # Τα 90 και 255 είναι τα κάτω και άνω κατώφλια αντίστοιχα. Για την συγκεκριμένη εικόνα είχαμε καλά αποτελέσματα αποφεύγοντας
+canny=cv2.Canny(ogblured,95,255) # Τα 90 και 255 είναι τα κάτω και άνω κατώφλια αντίστοιχα. Για την συγκεκριμένη εικόνα είχαμε καλά αποτελέσματα αποφεύγοντας
                                 # πολύ κοντινές τιμές.
 
 cv2.imshow("Original", original)
