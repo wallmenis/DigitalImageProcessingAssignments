@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-def sub_no_under_overflow(im1,im2):
+def sub_no_under_overflow(im1,im2):             # Πειραγμένη έκδοση του https://stackoverflow.com/questions/29611185/avoid-overflow-when-adding-numpy-arrays
     final_image = np.zeros(im1.shape, dtype=np.uint16)
     final_image += im1
     final_image -= im2
